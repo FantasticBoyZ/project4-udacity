@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ public class UserControllerTest {
     private static final String PASSWORD = "12345678";
     private static final String NOTFOUND_USERNAME = "notfound";
     private UserController userController;
+    private BCryptPasswordEncoder bCryptPasswordEncoder= mock(BCryptPasswordEncoder.class);
     private UserRepository userRepository = mock(UserRepository.class);
     private CartRepository cartRepository = mock(CartRepository.class);
 
@@ -32,7 +34,7 @@ public class UserControllerTest {
 
         TestUtils.injectObjects(userController, "userRepository", userRepository);
         TestUtils.injectObjects(userController, "cartRepository", cartRepository);
-
+        TestUtils.injectObjects(userController, "bCryptPasswordEncoder", bCryptPasswordEncoder);
         // create user
         User user = new User();
 
@@ -48,6 +50,7 @@ public class UserControllerTest {
 
     @Test
     public void createUserSuccess() {
+        when(bCryptPasswordEncoder.encode(PASSWORD)).thenReturn("hashedPassword");
         CreateUserRequest request = new CreateUserRequest();
         request.setUsername("newuser");
         request.setPassword(PASSWORD);
@@ -61,6 +64,7 @@ public class UserControllerTest {
         assertNotNull(user);
         assertEquals(0, user.getId());
         assertEquals("newuser", user.getUsername());
+        assertEquals("hashedPassword", user.getPassword());
 
     }
 
